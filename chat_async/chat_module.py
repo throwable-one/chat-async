@@ -91,6 +91,7 @@ class _ChatApiImpl(ChatApi, asyncio.StreamReaderProtocol):
         self.__connection_opened = False
         if self.__from_room_queue:
             self.__creator_info.client_queues.remove(self.__from_room_queue)
+            self.__from_room_queue = None
         if self.__nick:
             self.say_to_chat("I lost connection")
             self.__nick = None
