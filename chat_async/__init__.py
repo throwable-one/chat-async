@@ -5,6 +5,7 @@ AsyncIo-based chat
 import abc
 import asyncio
 
+
 __author__ = 'Link'
 
 
@@ -31,39 +32,48 @@ class AbstractRobot(metaclass=abc.ABCMeta):
         """
         pass
 
-class ChatInterface(metaclass=abc.ABCMeta):
+class ChatApi(metaclass=abc.ABCMeta):
+
+    @abc.abstractproperty
+    def connection_opened(self):
+        """
+
+        :rtype bool
+        """
+
+        pass
+
     @abc.abstractmethod
-    def subscribe(self):
+    def enter_chat(self, nick):
+        """
+
+        """
+        pass
+
+    @abc.abstractmethod
+    def say_to_chat(self, message):
+        pass
+
+    @abc.abstractmethod
+    def subscribe_to_chat(self):
         """
 
         :rtype asyncio.Queue
         """
         pass
 
-    @abc.abstractmethod
-    def say_to_chat(self, nick, message):
-        pass
 
-class Terminal(metaclass=abc.ABCMeta):
-    def __init__(self, chat_interface):
+class Driver(metaclass=abc.ABCMeta):
+    def __init__(self, chat_api):
         """
 
-        :type chat_interface ChatInterface
+        :type chat_api ChatApi
         """
-        self.chat_interface = chat_interface
-
-    @staticmethod
-    @abc.abstractmethod
-    def base_port():
-        """
-
-        :rtype int
-        """
-        pass
+        self._chat_api = chat_api
 
     @asyncio.coroutine
     @abc.abstractmethod
-    def handle_input(self, input_stream, output_stream):
+    def input_handle(self, input_stream, output_stream):
         """
 
         :type input_stream asyncio.StreamReader
@@ -73,7 +83,7 @@ class Terminal(metaclass=abc.ABCMeta):
 
     @asyncio.coroutine
     @abc.abstractmethod
-    def handle_output(self, input_stream, output_stream):
+    def output_handle(self, input_stream, output_stream):
         """
 
         :type input_stream asyncio.StreamReader
