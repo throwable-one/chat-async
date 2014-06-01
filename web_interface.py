@@ -1,4 +1,4 @@
 __author__ = 'Link'
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-HTTPServer(("192.168.1.3", 80), SimpleHTTPRequestHandler).serve_forever()
+HTTPServer(("0.0.0.0", 8080), SimpleHTTPRequestHandler).serve_forever()

@@ -6,7 +6,6 @@ import asyncio
 from enum import Enum
 
 from chat_async import ChatApi, Driver
-import functools
 
 
 __author__ = 'Link'
@@ -18,11 +17,12 @@ class _Direction(Enum):
 
 
 class _Creator:
-    def __init__(self, driver_class, direction, room_queue, client_queues, loop=asyncio.get_event_loop()):
+    def __init__(self, driver_class, direction, room_queue, client_queues, nicks, loop=asyncio.get_event_loop()):
         """
         :type direction _Direction
         :type room_queue asyncio.Queue
         :type client_queues list of asyncio.Queue
+        :type nicks list
         """
         self.driver_class = driver_class
         self.direction = direction
@@ -31,6 +31,7 @@ class _Creator:
         self.room_queue = room_queue
         self.client_queues = client_queues
         self.loop = loop
+        self.nicks = nicks
 
     def __call__(self, *args, **kwargs):
         return _ChatApiImpl(self)
@@ -76,7 +77,12 @@ class _ChatApiImpl(ChatApi, asyncio.StreamReaderProtocol):
 
     def enter_chat(self, nick):
         self.__nick = nick
+        self.__creator_info.nicks.append(nick)
         self.say_to_chat("Hello")
+
+    @property
+    def nicks(self):
+        return self.__creator_info.nicks
 
     def eof_received(self):
         super().eof_received()
@@ -94,9 +100,8 @@ class _ChatApiImpl(ChatApi, asyncio.StreamReaderProtocol):
             self.__from_room_queue = None
         if self.__nick:
             self.say_to_chat("I lost connection")
+            self.__creator_info.nicks.remove(self.__nick)
             self.__nick = None
-
-
 
 
 class ChatAsync:
@@ -117,6 +122,7 @@ class ChatAsync:
         self.__client_queues = []
         assert isinstance(loop, asyncio.AbstractEventLoop)
         self.__loop = loop
+        self.__nicks = []
 
 
     @asyncio.coroutine
@@ -127,11 +133,13 @@ class ChatAsync:
         for (port, driver_class) in self.__driver_classes_tuple:
             input_protocol = _Creator(driver_class, _Direction.input, self.__room_queue,
                                       self.__client_queues,
+                                      self.__nicks,
                                       self.__loop)
             yield from self.__loop.create_server(input_protocol, self.__host, port)
 
             output_protocol = _Creator(driver_class, _Direction.output, self.__room_queue,
                                        self.__client_queues,
+                                       self.__nicks,
                                        self.__loop)
             yield from self.__loop.create_server(output_protocol, self.__host, int(port) + 1)
 

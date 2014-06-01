@@ -32,8 +32,8 @@ class AbstractRobot(metaclass=abc.ABCMeta):
         """
         pass
 
-class ChatApi(metaclass=abc.ABCMeta):
 
+class ChatApi(metaclass=abc.ABCMeta):
     @abc.abstractproperty
     def connection_opened(self):
         """
@@ -47,6 +47,14 @@ class ChatApi(metaclass=abc.ABCMeta):
     def enter_chat(self, nick):
         """
 
+        """
+        pass
+
+    @abc.abstractproperty
+    def nicks(self):
+        """
+
+        :rtype list of str
         """
         pass
 

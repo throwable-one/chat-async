@@ -45,7 +45,7 @@ class NetworkDriver(chat_async.Driver):
         """
         manager = _TalkManager(input_stream, output_stream)
         manager.say('*' * 10)
-        manager.say("Welcome to chat")
+        manager.say("Welcome to chat ({})".format(','.join(self._chat_api.nicks)))
         manager.say('*' * 10)
         manager.say("Your name: ", skip_new_line=True)
         yield from manager.read()
@@ -65,7 +65,7 @@ class NetworkDriver(chat_async.Driver):
         manager = _TalkManager(input_stream, output_stream)
         chat_queue = self._chat_api.subscribe_to_chat()
         manager.say("=" * 10)
-        manager.say("Chat board")
+        manager.say("Chat board ({})".format(','.join(self._chat_api.nicks)))
         manager.say("=" * 10)
         while self._chat_api.connection_opened:
             message = yield from chat_queue.get()
