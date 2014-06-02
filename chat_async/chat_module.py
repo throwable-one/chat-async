@@ -4,8 +4,9 @@ Module with chat class implementation
 """
 import asyncio
 from enum import Enum
+import random
 
-from chat_async import ChatApi, Driver
+from chat_async import ChatApi, Driver, AbstractRobot
 
 
 __author__ = 'Link'
@@ -124,18 +125,23 @@ class _ChatApiImpl(ChatApi, asyncio.StreamReaderProtocol):
 class ChatAsync:
     """
     Chat async class.
-    Instanciate it, call .launch() and pass it to loop.
+    Instanciate it, call .launch()
 
     """
 
-    def __init__(self, host, loop=asyncio.get_event_loop(), driver_classes_tuple=None):
+    __MAX_SECONDS_BETWEEN_ROBOTS = 40
+
+    def __init__(self, host, loop=asyncio.get_event_loop(), driver_classes_tuple=None, robots_list=None):
         """
         :param loop event loop
         :param host: host to bind to
         :param driver_classes_tuple list of tuples in format (base_port, driver_class). \
             Each driver has 2 ports: base_port (for input) and base_port + 1 (for output)
 
+        :param robots_list list of robots (see AbstractRobot)
+
         :type loop asyncio.AbstractEventLoop
+        :type list of chat_async.AbstractRobot
         :type host str
         """
         self.__host = host
@@ -145,11 +151,23 @@ class ChatAsync:
         assert isinstance(loop, asyncio.AbstractEventLoop)
         self.__loop = loop
         self.__nicks = []
+        self.__robots_list = robots_list
+
+
+    @asyncio.coroutine
+    def _move_messages(self):
+        """
+        Loop forever moving messages from room to client queues
+        """
+        while True:
+            message = yield from self.__room_queue.get()
+            for client_queue in self.__client_queues:
+                client_queue.put_nowait(message)
 
     @asyncio.coroutine
     def launch(self):
         """
-        Launches server to loop. Pass it to event loop!
+        Launches server at loop.
         """
         for (port, driver_class) in self.__driver_classes_tuple:
             # TODO: get rid of copy/paste
@@ -167,11 +185,23 @@ class ChatAsync:
 
         # TODO: Support unix signals to stop
 
-        # Loop forever moving messages from room to client queues
+
+        if self.__robots_list:
+            yield from asyncio.gather(self._move_messages(), self._run_robots())
+        else:
+            yield from asyncio.Task(self._move_messages())
+
+    @asyncio.coroutine
+    def _run_robots(self):
+        """
+        Runs robots in loop
+        """
         while True:
-            message = yield from self.__room_queue.get()
-            for client_queue in self.__client_queues:
-                client_queue.put_nowait(message)
+            yield from asyncio.sleep(random.randint(1, ChatAsync.__MAX_SECONDS_BETWEEN_ROBOTS))
+            robot = random.choice(self.__robots_list)
+            assert isinstance(robot, AbstractRobot)
+            self.__room_queue.put_nowait("{}: {}".format(robot.name, robot.get_some_phrase()))
+
 
 
 

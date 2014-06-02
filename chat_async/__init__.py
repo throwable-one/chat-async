@@ -4,6 +4,7 @@ AsyncIo-based chat
 """
 import abc
 import asyncio
+import random
 
 
 __author__ = 'Link'
@@ -24,13 +25,34 @@ class AbstractRobot(metaclass=abc.ABCMeta):
 
     @asyncio.coroutine
     @abc.abstractmethod
-    def say_something(self, output_stream):
+    def get_some_phrase(self):
         """
         Say something funny
-        :param output_stream: stream where to say something
-        :type output_stream asyncio.streams.StreamWriter
+        :rtype str
+        :return some phrase
         """
         pass
+
+
+class RandomRobot(AbstractRobot):
+    """
+    Simple robot that say some words you provide to it
+    """
+
+
+    def __init__(self, *list_of_phrazes):
+        """
+        :param list_of_phrazes phrases to say
+        :type list_of_phrazes list of str
+        """
+        self.__list_of_words = list_of_phrazes
+
+    @property
+    def name(self):
+        return "RobotTheRandom"
+
+    def get_some_phrase(self):
+        return random.choice(self.__list_of_words)
 
 
 class ChatApi(metaclass=abc.ABCMeta):

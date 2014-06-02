@@ -6,6 +6,9 @@ Entry point is `chat_async.chat_module.ChatAsync` class.
 
 Chat could be extended by drivers: driver for network access (via telnet) and web access (via websockets) are included.
 
+Supports robots (see `chat_async.RandomRobot` for example)
+
+
 Check ``chat_server.py`` for running example.
 ## Running chat 
 
