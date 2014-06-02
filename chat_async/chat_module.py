@@ -82,7 +82,7 @@ class _ChatApiImpl(ChatApi, asyncio.StreamReaderProtocol):
 
     @property
     def nicks(self):
-        return self.__creator_info.nicks
+        return filter(None, set(self.__creator_info.nicks))
 
     def eof_received(self):
         super().eof_received()
