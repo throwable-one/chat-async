@@ -7,6 +7,7 @@ import asyncio
 from chat_async import chat_module, network_driver, websocket_driver
 
 
+# NetworkDriver with base port 1234, WebsocketDriver as baseport 2345
 drivers = [(1234, network_driver.NetworkDriver), (2345, websocket_driver.WebsocketDriver)]
 
 loop = asyncio.get_event_loop()

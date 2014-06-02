@@ -2,11 +2,14 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Test</title>
+    <title>WebSocket test</title>
     <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script type="text/javascript">
+        /**
+         * Simple client for websocket chat driver.
+         */
         $(function () {
-              var YOUR_IP = "unit-489";
+              var YOUR_IP = "unit-489"; /*TODO: Set your IP here !!*/
               var output = new WebSocket("ws://" + YOUR_IP + ":2345");
               var input = new WebSocket("ws://" + YOUR_IP + ":2346");
               var nick = prompt("Nick");
