@@ -1,4 +1,5 @@
 import asyncio
+from concurrent.futures import CancelledError, TimeoutError
 
 __author__ = 'Link'
 
@@ -57,7 +58,7 @@ class NetworkDriver(chat_async.Driver):
                 manager.say(": ", skip_new_line=True)
                 yield from manager.read()
                 self._chat_api.say_to_chat(manager.last_read_message)
-            except asyncio.Error:
+            except (CancelledError, TimeoutError):
                 return
 
 
