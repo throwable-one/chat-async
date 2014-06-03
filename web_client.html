@@ -4,49 +4,12 @@
     <meta charset="UTF-8">
     <title>WebSocket test</title>
     <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
-    <script type="text/javascript">
-        /**
-         * Simple client for websocket chat driver.
-         */
+    <script type="text/javascript" src="js/websocket_client.js"></script>
+    <script type="application/javascript">
         $(function () {
-                    var YOUR_IP = "unit-489";
-                    /*TODO: Set your IP here !!*/
-                    var output = new WebSocket("ws://" + YOUR_IP + ":2345");
-                    var input = new WebSocket("ws://" + YOUR_IP + ":2346");
-                    var nick = prompt("Nick");
-                    var console = $("#console");
-                    var input_box = $("#input_box");
-                    var failed = false; // To be set when disconnected
-
-                    function handleDisconnect() {
-                        if (!failed) {
-                            failed = true;
-                            alert('Disconnected');
-                            location.reload();
-                        }
-                    }
-
-                    output.onclose = handleDisconnect;
-                    input.onclose = handleDisconnect;
-
-                    output.onopen = function () {
-                        output.send(nick);
-                    };
-                    $("#my_form").submit(function (event) {
-                        output.send(input_box.val());
-                        event.preventDefault();
-                        input_box.val("");
-                        return false;
-                    });
-                    input.onmessage = function (message) {
-                        $("<li></li>").text(message.data).appendTo(console);
-                        var lines = console.children("li");
-                        if (lines.length > 10) {
-                            lines[0].remove();
-                        }
-                    }
-                }
-        );
+            var YOUR_IP = "unit-489"; // Set your IP here
+            AsyncChat($("#people_in_chat"), $("#console"), $("#my_form"), YOUR_IP);
+        });
     </script>
     <style type="text/css">
         ul#console {
@@ -57,6 +20,9 @@
     </style>
 </head>
 <body>
+<p>
+    People in da chat: <span id="people_in_chat"></span>
+</p>
 <ul id="console">
 
 </ul>

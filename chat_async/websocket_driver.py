@@ -2,12 +2,27 @@
 """
 Module that supports websocket access to chat.
 Use WebsocketDriver class.
+
+TODO: Get rid of second channel.
+
+Check js/websocket_client for example client.
+
+JS client protocol: Each message consists of 2 parts: "message" and "text". See "Protocol" section below.
 """
 import asyncio
 
 __author__ = 'Link'
 from chat_async import Driver
 from websockets import server
+from json.encoder import JSONEncoder
+
+# Protocol
+
+
+_GET_NICK = 'get_nick'  # Client should send nick with next message
+_ADD = 'add'  # Client should add nick to list of "people in chat" (data in "text" field)
+_REMOVE = 'remove'  # should remove it
+_TEXT = 'text'  # Should display text (data in "text" field)
 
 
 class WebsocketDriver(Driver):
@@ -39,9 +54,15 @@ class WebsocketDriver(Driver):
         :return:
         """
         room_queue = self._chat_api.subscribe_to_chat()
+        json_encoder = JSONEncoder()
+        current_people = self._chat_api.nicks_in_chat
         while self._chat_api.connection_opened:
             message = yield from room_queue.get()
-            yield from protocol.send(message)
+            yield from protocol.send(json_encoder.encode({"message": _TEXT, "text": message}))
+            if current_people != self._chat_api.nicks_in_chat:
+                current_people = self._chat_api.nicks_in_chat
+                yield from protocol.send(
+                    json_encoder.encode({"message": _ADD, "text": ",".join(self._chat_api.nicks_in_chat)}))
 
     @asyncio.coroutine
     def __input_loop(self, protocol, base):
@@ -51,8 +72,12 @@ class WebsocketDriver(Driver):
         :param base:
         :return:
         """
+        json_encoder = JSONEncoder()
+        yield from protocol.send(json_encoder.encode({"message": _GET_NICK}))
         nick = yield from protocol.recv()
         self._chat_api.enter_chat(nick)
+        yield from protocol.send(
+            json_encoder.encode({"message": _ADD, "text": ",".join(self._chat_api.nicks_in_chat)}))
         while self._chat_api.connection_opened:
             message = yield from protocol.recv()
             self._chat_api.say_to_chat(message)
